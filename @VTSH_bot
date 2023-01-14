@@ -1,0 +1,93 @@
+import telebot
+from telebot import types
+has_appl = False
+import schedule
+import time
+
+
+bot = telebot.TeleBot('5826775960:AAEWf_U8dZ1grUnEDeYZp1emPE3Rr8Ya_cc')
+
+@bot.message_handler(commands=['start'])
+def start(message):
+
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("Начать")
+    markup.add(btn1)
+    bot.send_message(message.from_user.id, "Привет! Здесь ты можешь оставить свою заявку на вступление в турнир", reply_markup=markup)
+
+@bot.message_handler(content_types=['text'])
+def get_text_messages(message):
+    global has_appl
+
+    if message.text == 'Начать':
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton('Пример заявки')
+        btn2 = types.KeyboardButton('Рассылка')
+        btn3 = types.KeyboardButton('Оставить/отозвать свою заявку')
+        btn4 = types.KeyboardButton('Ссылка на наш сайт')
+        markup.add(btn1, btn2, btn3, btn4)
+        bot.send_message(message.from_user.id, 'Задайте интересующий вас вопрос', reply_markup=markup)
+
+
+    elif message.text == 'Пример заявки':
+        bot.send_message(message.from_user.id, '''1.Название команды и номер корпуса -  "Спортсмены" 11 корпус
+2.Тренер - Иван Иванович
+3.Состав команды - фамилия, имя, класс ученика(6 основных, один на лавке запасных, по желанию)''', parse_mode='Markdown')
+
+    elif message.text == 'Рассылка':
+        if has_appl == False:
+            keyboard = types.InlineKeyboardMarkup()
+            
+            button1 = types.InlineKeyboardButton(text="Да", callback_data="yes")
+            button2 = types.InlineKeyboardButton(text="Нет", callback_data="no")
+            
+            #keyboard.add(button1)
+            #keyboard.add(button2)
+            keyboard.row(button1, button2)
+
+            bot.send_message(message.from_user.id, 'Хотите ли вы, что бы бот присылал вам новости о нашем проекте?', parse_mode='Markdown', reply_markup=keyboard)
+
+        elif has_appl == True:
+            
+            keyboard = types.InlineKeyboardMarkup()
+            
+            button3 = types.InlineKeyboardButton(text="Да", callback_data="yes2")
+            button4 = types.InlineKeyboardButton(text="Нет", callback_data="no2")
+            
+            #keyboard.add(button1)
+            #keyboard.add(button2)
+            keyboard.row(button3, button4)
+            
+            bot.send_message(message.from_user.id, 'у вас уже включена рассылка, хотите выключить?', parse_mode='Markdown', reply_markup=keyboard)
+
+    elif message.text == 'Оставить/отозвать свою заявку':
+        bot.send_message(message.from_user.id, '', parse_mode='Markdown')
+        
+    elif message.text == 'Ссылка на наш сайт':
+        bot.send_message(message.from_user.id,'http://vtsh.tilda.ws/turik1561ru', parse_mode='Markdown')
+    
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    global has_appl
+    if call.message:
+        if call.data == "yes":
+            bot.send_message(call.message.chat.id, "Вам будет регулярно приходить важная информация о нашем проекте")
+            has_appl = True
+        elif call.data == "no":
+            bot.send_message(call.message.chat.id, "Вы отказались от рассылки")
+            has_appl = False
+        if call.data == "yes2":
+            bot.send_message(call.message.chat.id, "Информация о нашем проекте не будет приходить")
+            has_appl = False
+        elif call.data == "no2":
+            bot.send_message(call.message.chat.id, "Вам будет регулярно приходить важная информация о нашем проекте")
+            has_appl = True
+
+if has_appl == True:
+    schedule.every().saturday.at("16:02").do(appl)
+
+def appl():
+    bot.send_message(call.message.chat.id,("проект в разработке...."))
+    
+
+bot.polling(none_stop=True, interval=0)
